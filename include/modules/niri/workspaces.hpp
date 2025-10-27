@@ -23,7 +23,8 @@ class Workspace {
 
  private:
   std::string getIcon(const std::string& value, const Json::Value& ws);
-  void updateTaskbar(const std::vector<Json::Value>& windows_data);
+  void updateTaskbar(const std::vector<Json::Value>& windows_data, const uint64_t active_window_id,
+                     const bool workspace_is_active);
 
   IconLoader iconLoader_;
   uint64_t id_;
