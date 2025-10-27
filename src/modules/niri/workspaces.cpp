@@ -86,7 +86,7 @@ void Workspace::updateTaskbar(const std::vector<Json::Value>& windows_data,
 
   auto separator = taskBarConfig_.get("separator", " ").asString();
 
-  auto format = taskBarConfig_.get("format", "").asString();
+  auto format = taskBarConfig_.get("format", "{icon}").asString();
   bool taskbarWithIcon = false;
   std::string taskbarFormatBefore, taskbarFormatAfter;
 
@@ -98,7 +98,7 @@ void Workspace::updateTaskbar(const std::vector<Json::Value>& windows_data,
       taskbarFormatAfter = parts[1];
     }
   } else {
-    taskbarWithIcon = true;
+    taskbarWithIcon = true;  // default to icon-only
   }
 
   auto format_tooltip = taskBarConfig_.get("tooltip-format", "{title}").asString();
