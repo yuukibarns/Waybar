@@ -72,7 +72,7 @@ std::string Workspace::getIcon(const std::string& value, const Json::Value& ws) 
 }
 
 void Workspace::updateTaskbar(const std::vector<Json::Value>& windows_data,
-                              const uint64_t active_window_id, const bool workspace_is_active) {
+                              const uint64_t active_window_id) {
   if (!taskBarConfig_.get("enable", false).asBool()) return;
 
   for (auto child : content_.get_children()) {
@@ -142,7 +142,6 @@ void Workspace::updateTaskbar(const std::vector<Json::Value>& windows_data,
     if (window["is_urgent"].asBool()) window_box->get_style_context()->add_class("urgent");
     if (window["id"].asUInt64() == active_window_id)
       window_box->get_style_context()->add_class("active");
-    if (workspace_is_active) window_box->get_style_context()->add_class("workspace-active");
     auto event_box = Gtk::make_managed<Gtk::EventBox>();
     event_box->add(*window_box);
     if (!config_["disable-click"].asBool()) {
@@ -242,8 +241,7 @@ void Workspace::update(const Json::Value& workspace_data,
   else
     label_.set_text(name);
 
-  updateTaskbar(windows_data, workspace_data["active_window_id"].asUInt64(),
-                workspace_data["is_active"].asBool());
+  updateTaskbar(windows_data, workspace_data["active_window_id"].asUInt64());
 
   if (config_["current-only"].asBool()) {
     const auto* property = config_["all-outputs"].asBool() ? "is_focused" : "is_active";

@@ -139,4 +139,3 @@ Additional to workspace name matching, the following *format-icons* can be set.
 - *#workspaces .taskbar-window.urgent* (applied to urgent windows)
 - *#workspaces .taskbar-window.floating* (applied to floating windows)
 - *#workspaces .taskbar-window.active* (applied to the active window within every workspace)
-- *#workspaces .taskbar-window.workspace-active* (applied to windows in the active workspace)
