@@ -273,6 +273,12 @@ Workspaces::Workspaces(const std::string& id, const Bar& bar, const Json::Value&
   gIPC->registerForIPC("WindowClosed", this);
   gIPC->registerForIPC("WindowLayoutsChanged", this);
 
+  if (config["enable-bar-scroll"].asBool()) {
+    auto& window = const_cast<Bar&>(bar_).window;
+    window.add_events(Gdk::SCROLL_MASK | Gdk::SMOOTH_SCROLL_MASK);
+    window.signal_scroll_event().connect(sigc::mem_fun(*this, &Workspaces::handleScroll));
+  }
+
   dp.emit();
 }
 
@@ -342,6 +348,47 @@ void Workspaces::addWorkspace(const Json::Value& workspace_data,
       std::make_unique<Workspace>(config_, new_workspace_id, getWorkspaceName(workspace_data));
   box_.pack_start(new_workspace->button(), false, false, 0);
   workspaces_[new_workspace_id] = std::move(new_workspace);
+}
+
+bool Workspaces::handleScroll(GdkEventScroll* e) {
+  if (gdk_event_get_pointer_emulated((GdkEvent*)e) != 0) {
+    /**
+     * Ignore emulated scroll events on window
+     */
+    return false;
+  }
+
+  auto dir = AModule::getScrollDir(e);
+  if (dir == SCROLL_DIR::NONE) {
+    return true;
+  }
+
+  bool reverse_scroll = config_["reverse-scroll"].isBool() && config_["reverse-scroll"].asBool();
+
+  try {
+    Json::Value request(Json::objectValue);
+    auto& action = (request["Action"] = Json::Value(Json::objectValue));
+
+    std::string action_name;
+
+    if (dir == SCROLL_DIR::DOWN || dir == SCROLL_DIR::RIGHT) {
+      action_name = reverse_scroll ? "FocusWorkspaceUp" : "FocusWorkspaceDown";
+    } else if (dir == SCROLL_DIR::UP || dir == SCROLL_DIR::LEFT) {
+      action_name = reverse_scroll ? "FocusWorkspaceDown" : "FocusWorkspaceUp";
+    } else {
+      return true;
+    }
+
+    action[action_name] = Json::Value(Json::objectValue);
+
+    IPC::send(request);
+
+  } catch (const std::exception& e) {
+    spdlog::error("Workspaces: {}", e.what());
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace waybar::modules::niri

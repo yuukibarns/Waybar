@@ -46,6 +46,7 @@ class Workspaces : public AModule, public EventHandler {
   void doUpdate();
   void addWorkspace(const Json::Value& workspace_data,
                     const std::vector<Json::Value>& windows_data);
+  bool handleScroll(GdkEventScroll* /*unused*/) override;
 
   const Bar& bar_;
   Gtk::Box box_;
