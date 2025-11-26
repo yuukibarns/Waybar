@@ -358,6 +358,13 @@ bool Workspaces::handleScroll(GdkEventScroll* e) {
     return false;
   }
 
+  static bool action_in_progress_ = false;
+
+  // Ignore events if we're still processing a previous action
+  if (action_in_progress_) {
+    return true;
+  }
+
   auto dir = AModule::getScrollDir(e);
   if (dir == SCROLL_DIR::NONE) {
     return true;
@@ -383,8 +390,20 @@ bool Workspaces::handleScroll(GdkEventScroll* e) {
 
     IPC::send(request);
 
+    action_in_progress_ = true;
+
+    g_timeout_add(
+        100,
+        [](gpointer data) -> gboolean {
+          bool* action_in_progress = static_cast<bool*>(data);
+          *action_in_progress = false;
+          return G_SOURCE_REMOVE;
+        },
+        &action_in_progress_);
+
   } catch (const std::exception& e) {
     spdlog::error("Workspaces: {}", e.what());
+    action_in_progress_ = false;
     return false;
   }
 
